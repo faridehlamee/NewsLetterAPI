@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Visitor Portal</title>
+    <style>
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: system-ui;
+        }
+
+        .table tr {
+            border: hidden;
+        }
+
+        .table img {
+            max-width: 300px;
+        }
+
+        .table h2 {
+            color: #007bff;
+        }
+
+        .table .text-primary {
+            color: #18324e;
+        }
+
+        .table .titleDate {
+            color: #000;
+        }
+
+        .newsLetterCenter {
+            display: flex;
+            justify-content: center;
+            margin: 0; /* Remove default margin */
+            font-family: system-ui;
+            height:75px;
+        }
+        .emptyTrHeight{
+            height:20px;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1 class="newsLetterCenter">Welcome to Visitor's Portal</h1>    
+    <!-- <button id="btnGetData">Get Data</button> -->
+    <table class="table" >
+        <tbody>
+            <!-- JavaScript will populate this table with data -->
+        </tbody>
+    </table>
+    <script>
+        const baseUrl = "https://newsletterfl.azurewebsites.net";
+
+        var showResponse = function (data) {
+            const tableBody = document.querySelector(".table tbody");
+            tableBody.innerHTML = ""; // Clear the table body before populating
+
+            data.forEach((title) => {
+                // Create an empty tr at the beginning
+                const emptyRowStart = document.createElement("tr");
+                emptyRowStart.classList.add("emptyTrHeight");
+                tableBody.appendChild(emptyRowStart);
+
+                // Create a row for the title information
+                const titleRow = document.createElement("tr");
+
+                titleRow.innerHTML = ` <td></td>
+                    <td style="text-align: left;" colspan="2">
+                        <img src="${baseUrl}/img/logo.png" alt="logo" style="max-width: 300px;" />
+                        <h2 class="text-primary" style="margin-top: 0; margin-bottom:0">
+                            Newsletter #${title.titleId} - <span class="titleDate">${title.titleDate}</span>
+                        </h2>
+                    </td>                   
+                `;
+                tableBody.appendChild(titleRow);
+
+                // Create an empty tr at the end
+                const emptyRowEnd = document.createElement("tr");
+                emptyRowEnd.classList.add("emptyTrHeight");
+                tableBody.appendChild(emptyRowEnd);
+
+                // Loop through the articles belonging to this title
+                title.articles.forEach((article) => {
+                    const articleRow = document.createElement("tr");
+                    articleRow.innerHTML = `
+                        <td style="font-size: 36px; width: 400px;">
+                            ${article.articleIdInTheTitle}. ${article.name}
+                        </td>
+                    `;
+                    tableBody.appendChild(articleRow);
+
+                    const descriptionRow = document.createElement("tr");
+                    descriptionRow.innerHTML = `
+                        <td>
+                            <img src="${baseUrl}${article.picture}" alt="Image Description" />
+                        </td>
+                        <td style="font-size: 30px;">
+                            ${article.description}
+                        </td>
+                    `;
+                    tableBody.appendChild(descriptionRow);
+                });
+            });
+        };
+                      
+        var getData = async function () {
+            var url = baseUrl + "/api/ApiNewsLetter";
+
+            await fetch(url)
+                .then((response) => {
+                    return response.json();                
+                })
+                .then((data) => {
+                    showResponse(data);
+                    ChangeDateFormat();
+                });
+
+            return false;
+        };
+
+        var ChangeDateFormat = async function () {
+            var dateElements = document.querySelectorAll('.titleDate');
+            dateElements.forEach(function(dateElement) {
+                var dateString = dateElement.textContent;
+                var date = new Date(dateString);
+        
+                var options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                };
+        
+                var formattedDate = date.toLocaleString('en-US', options);
+                dateElement.textContent = formattedDate;
+            });
+        };
+
+        getData();
+
+    </script>
+</body>
+</html>
